@@ -1,80 +1,72 @@
-# EEPROM Kod Denemeleri
+<div align="center">
 
-Arduino projelerinde **EEPROM üzerinden kalıcı veri saklama ve okuma** mantığını geliştirmek için hazırlanmış deneysel kod koleksiyonudur.
+# 💾 EEPROM Kod Denemeleri
 
-Bu repository özellikle renk sensörü kalibrasyon değerlerinin EEPROM'a kaydedilmesi ve daha sonra başka bir program tarafından okunması sürecini test etmek amacıyla oluşturulmuştur.
+**Arduino • EEPROM • Renk Sensörü • Kalibrasyon**
 
-## ✨ İçerik
+Kalibrasyon verilerinin ölçülmesi, filtrelenmesi ve kalıcı belleğe aktarılması üzerine hazırlanmış teknik çalışma alanı.
 
-- EEPROM'a `int` değerlerin kaydedilmesi
-- EEPROM'dan kalibrasyon değerlerinin okunması
-- Renk sensörü için kırmızı, mavi ve yeşil limitlerin saklanması
-- Kalibrasyon sırasında çoklu ölçüm alma
-- Ortalama ve standart sapma ile ölçüm stabilizasyonu
-- Kaydedilen verilerin seri port üzerinden kontrol edilmesi
+<img src="docs/flow.svg" alt="Kalibrasyon akışı" width="900">
 
-## 📂 Proje Yapısı
+</div>
+
+---
+
+## 🎯 Amaç
+
+Bu repository, daha büyük robotik sistemlerde kullanılabilecek **kalıcı sensör kalibrasyonu** altyapısını izole şekilde geliştirmek için kullanılır.
+
+## 🧩 İki Temel Firmware
+
+| Dosya | Sorumluluk |
+|---|---|
+| `veren/veren.ino` | Sensör ölçümü + istatistik + EEPROM yazma |
+| `alan/alan.ino` | EEPROM verilerini okuma + kontrol |
+
+## 🔬 Kalibrasyon Pipeline
+
+```text
+Sensör ölçümü → Çoklu örnek → Ortalama / sapma → Alt/üst limit → EEPROM
+```
+
+Seri port komutları: `k` = kırmızı, `m` = mavi, `y` = yeşil.
+
+### EEPROM Haritası
+
+| Adres | Veri |
+|---:|---|
+| `0` | Kırmızı alt |
+| `4` | Kırmızı üst |
+| `8` | Mavi alt |
+| `12` | Mavi üst |
+| `16` | Yeşil alt |
+| `20` | Yeşil üst |
+| `30` | Kalibrasyon MAGIC değeri |
+
+> EEPROM yazma işlemleri gereksiz yere loop içinde tekrarlanmamalıdır.
+
+## 🛠️ Teknolojiler
+
+Arduino C/C++ · `EEPROM.h` · renk sensörü · Serial Monitor
+
+## 🚀 Kullanım
+
+1. `veren/veren.ino` firmware'ini yükleyin.
+2. Serial Monitor'ü `9600 baud` ile açın.
+3. Renk komutunu gönderin.
+4. Ölçümlerin tamamlanmasını bekleyin.
+5. `alan/alan.ino` ile kalibrasyonu doğrulayın.
+
+## 📁 Yapı
 
 ```text
 EEPROM-KOD-DENEMELER/
 ├── alan/
-│   └── alan.ino      # EEPROM'daki değerleri okur
 ├── veren/
-│   └── veren.ino     # Renk kalibrasyonu yapar ve EEPROM'a kaydeder
+├── docs/flow.svg
 └── README.md
 ```
 
-## 🔬 `veren` — Kalibrasyon ve Kayıt
+## 🚧 Durum
 
-`veren.ino`, TCS benzeri bir renk sensöründen kırmızı, mavi ve yeşil kanalları ölçerek kalibrasyon limitleri oluşturur.
-
-Kalibrasyon seri port üzerinden yapılır:
-
-```text
-k → Kırmızı
-m → Mavi
-y → Yeşil
-```
-
-Her renk için birden fazla ölçüm alınır ve daha kararlı bir sonuç elde etmek amacıyla istatistiksel filtreleme uygulanır. Sonrasında alt/üst limitler EEPROM'a 4-byte aralıklarla yazılır.
-
-## 📖 `alan` — EEPROM Okuma
-
-`alan.ino`, daha önce kaydedilmiş kalibrasyon değerlerini EEPROM'dan okuyarak Serial Monitor üzerinde gösterir.
-
-Saklanan veri sırası:
-
-| Adres | Veri |
-|---:|---|
-| `0` | Kırmızı alt limit |
-| `4` | Kırmızı üst limit |
-| `8` | Mavi alt limit |
-| `12` | Mavi üst limit |
-| `16` | Yeşil alt limit |
-| `20` | Yeşil üst limit |
-
-## 🛠️ Teknolojiler
-
-- Arduino
-- C/C++
-- `EEPROM.h`
-- Renk sensörü
-- Serial Monitor
-
-## 🚀 Kullanım
-
-1. `veren/veren.ino` dosyasını Arduino'ya yükleyin.
-2. Serial Monitor'ü `9600 baud` ile açın.
-3. Kalibrasyon yapmak istediğiniz rengi ilgili komutla başlatın.
-4. Kalibrasyon tamamlandıktan sonra değerler EEPROM'a kaydedilir.
-5. `alan/alan.ino` ile EEPROM değerlerini okuyup kontrol edin.
-
-## ⚠️ Not
-
-EEPROM sınırlı sayıda yazma döngüsüne sahip kalıcı hafızadır. Kalibrasyon gibi seyrek gerçekleştirilen işlemlerde kullanılması uygundur; döngü içerisinde gereksiz `EEPROM.put()` çağrılarından kaçınılmalıdır.
-
-## 🚧 Geliştirme Durumu
-
-**Deneysel / yardımcı modül**
-
-Bu repository, daha büyük Arduino ve robotik projelerinde kullanılabilecek EEPROM tabanlı veri saklama altyapısının geliştirilmesi için hazırlanmıştır.
+**Deneysel / yardımcı embedded modül**
